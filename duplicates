@@ -1,0 +1,7 @@
+Get-ChildItem "C:\Path\To\Folder" -File |
+    Group-Object Name |
+    Where-Object { $_.Count -gt 1 } |
+    ForEach-Object {
+        Write-Host "`nDuplicate name: $($_.Name)"
+        $_.Group.FullName
+    }
