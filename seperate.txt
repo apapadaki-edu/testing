@@ -1,0 +1,38 @@
+param (
+    [Parameter(Mandatory = $true)]
+    [string]$folder
+)
+
+# Check if folder exists
+if (-not (Test-Path $folder)) {
+    Write-Error "Folder not found: $folder"
+    exit
+}
+
+$parent = Split-Path -Path $folder -parent
+
+# create subfolders for even and odd pages
+if (Test-Path $parent){
+    $evenFolder = New-Item -Path (Join-Path -Path $parent -ChildPath "crop_even") -ItemType "Directory" -Force
+    $oddFolder = New-Item -Path (Join-Path -Path $parent -ChildPath "crop_odd") -ItemType "Directory" -Force
+}
+# Get all files
+$Files = Get-ChildItem -Path $folder -Filter "*.jp2"
+
+
+foreach ($File in $Files) {
+    $name = [System.IO.Path]::GetFileNameWithoutExtension($File)
+    # Match last 4 or 5 digits followed by _letter before .jp2
+    if ($File.BaseName -match "(\d{4,5})_[a-zA-Z]$") {
+        #convert the number string to integer
+        $pageNo = [int]$Matches[1]
+
+        #check if even and copy to the right folder
+        if ($pageNo % 2 -eq 0){
+            Copy-Item -Path $File.FullName -Destination $evenFolder.FullName
+        } else {
+            Copy-Item -Path $File.FullName -Destination $oddFolder.FullName
+        }
+ 
+    }
+}
